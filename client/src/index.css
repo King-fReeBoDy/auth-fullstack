@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+* {
+  font-family: "Open sans";
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Kumbh sans";
+}

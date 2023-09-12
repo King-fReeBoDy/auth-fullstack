@@ -31,11 +31,11 @@ app.post("/register", async (req, res) => {
     const salt = await bcryt.genSalt(10);
     const hashPassword = await bcryt.hash(password, salt);
 
-    const user = await prisma.create({
+    const user = await prisma.user.create({
       data: { username, email, password: hashPassword },
     });
 
-    res.status(201).json(user);
+    res.status(201).send("User created");
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal error");
@@ -62,6 +62,12 @@ app.post("/login", async (req, res) => {
       return res.status(400).send("Wrong credentials");
     }
 
+    data = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+    };
+
     const accessToken = jwt.sign(user, process.env.ACCESSTOKEN, {
       expiresIn: "1m",
     });
@@ -69,14 +75,15 @@ app.post("/login", async (req, res) => {
       expiresIn: "15m",
     });
 
-    user.accessToken = accessToken;
+    data.accessToken = accessToken;
 
     res.cookie("token", refreshToken, {
       secure: false,
       httpOnly: true,
       path: "/refreshtoken",
     });
-    res.status(200).json(user);
+
+    res.status(200).json(data);
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal server error");

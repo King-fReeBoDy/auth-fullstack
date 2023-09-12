@@ -1,11 +1,13 @@
-import { useState, ReactNode, createContext } from "react";
+import { useState, useEffect, ReactNode, createContext } from "react";
+import { getFromLocalStorage } from "../utils/localStorage";
 
-type IUser = {
+export interface IUser {
   id: string;
   username: string;
   email: string;
   password: string;
-};
+  accessToken: string;
+}
 
 interface IAuth {
   user: IUser | null;
@@ -19,6 +21,11 @@ export const AuthAPI = createContext<IAuth>({
 
 const AuthContext = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<IUser | null>(null);
+
+  useEffect(() => {
+    const loggedInUser: IUser | null = getFromLocalStorage();
+    setUser(loggedInUser);
+  }, []);
 
   return (
     <AuthAPI.Provider value={{ user, setUser }}>{children}</AuthAPI.Provider>
