@@ -14,6 +14,43 @@ app.use(express.json());
 app.use(cors());
 app.use(cookieParser());
 
+app.get(
+  "/",
+  (req, res, next) => {
+    if (!req.headers.authorization) {
+      return res.status(401).send("Authorization header missing");
+    }
+
+    const [authType, token] = req.headers.authorization.split(" ");
+
+    if (authType !== "Bearer" || !token) {
+      return res.status(401).send("Invalid authorization header format");
+    }
+
+    try {
+      const isValid = jwt.verify(token, process.env.ACCESSTOKEN);
+
+      if (!isValid) {
+        return res.status(401).send("Invalid authorization header format");
+      }
+
+      next();
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send("Internal server error");
+    }
+  },
+  async (req, res) => {
+    try {
+      const users = await prisma.user.findMany({});
+      res.status(200).send(users);
+    } catch (error) {
+      console.error(error);
+      res.status(500).send("Internal server error");
+    }
+  }
+);
+
 app.post("/register", async (req, res) => {
   const { username, email, password } = req.body;
 

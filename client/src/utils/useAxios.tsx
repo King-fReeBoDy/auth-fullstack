@@ -7,12 +7,15 @@ import { AuthAPI } from "../context/AuthContext";
 
 const useAxios = () => {
   const { setUser } = useContext(AuthAPI);
+  const user = getFromLocalStorage();
+
   const axiosInstance = axios.create({
     baseURL: "http://localhost:8080",
+    headers: {
+      Authorization: `Bearer ${user?.accessToken}`,
+    },
     withCredentials: true,
   });
-
-  const user = getFromLocalStorage();
 
   axiosInstance.interceptors.request.use(async (req) => {
     if (user) {
