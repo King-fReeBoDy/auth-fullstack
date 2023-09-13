@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 const bcryt = require("bcrypt");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const morgan = require("morgan");
 const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
@@ -11,8 +12,16 @@ const app = express();
 const PORT = 8080;
 
 app.use(express.json());
-app.use(cors());
+const allowedOrigin = "http://localhost:5173";
+
+app.use(
+  cors({
+    origin: allowedOrigin,
+    credentials: true,
+  })
+);
 app.use(cookieParser());
+app.use(morgan("dev"));
 
 app.get(
   "/",
@@ -43,6 +52,9 @@ app.get(
   async (req, res) => {
     try {
       const users = await prisma.user.findMany({});
+
+      console.log("users");
+
       res.status(200).send(users);
     } catch (error) {
       console.error(error);
@@ -105,20 +117,16 @@ app.post("/login", async (req, res) => {
       email: user.email,
     };
 
-    const accessToken = jwt.sign(user, process.env.ACCESSTOKEN, {
-      expiresIn: "1m",
+    const accessToken = jwt.sign(data, process.env.ACCESSTOKEN, {
+      expiresIn: "3s",
     });
-    const refreshToken = jwt.sign(user, process.env.REFRESHTOKEN, {
+    const refreshToken = jwt.sign(data, process.env.REFRESHTOKEN, {
       expiresIn: "15m",
     });
 
     data.accessToken = accessToken;
 
-    res.cookie("token", refreshToken, {
-      secure: false,
-      httpOnly: true,
-      path: "/refreshtoken",
-    });
+    res.cookie("token", refreshToken, { httpOnly: true });
 
     res.status(200).json(data);
   } catch (error) {
@@ -127,19 +135,31 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/refresh-token", (req, res) => {
-  const token = req.cookies.token;
+app.get("/refresh_token", (req, res) => {
+  const cookies = req.cookies.token;
 
-  if (!token) {
+  if (!cookies) {
     return res.status(401).send("Not authorized");
   }
 
   try {
-    const isValid = jwt.verify(token, "jwtrefreshtoken");
+    const isValid = jwt.verify(cookies, process.env.REFRESHTOKEN);
+
     if (!isValid) {
       return res.status(401).send("Not authorized");
     }
-    res.status(200).json({ user: isValid });
+
+    const data = {
+      id: isValid.id,
+      username: isValid.username,
+      email: isValid.email,
+    };
+
+    const newAccessToken = jwt.sign(data, process.env.ACCESSTOKEN);
+
+    data.accessToken = newAccessToken;
+
+    res.status(200).send(data);
   } catch (error) {
     console.error(error);
     res.status(500).send("Internal server error");
@@ -147,7 +167,7 @@ app.get("/refresh-token", (req, res) => {
 });
 
 app.get("/logout", (req, res) => {
-  res.clearCookie("token", { path: "/refreshtoken" });
+  res.clearCookie("token", { path: "/" });
   res.status(200).send("Logged out");
 });
 

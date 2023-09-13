@@ -12,18 +12,20 @@ interface IUsers {
 
 const Home = () => {
   const { user, setUser } = useContext(AuthAPI);
-  const [users, setUsers] = useState<IUsers[] | null>(null);
+  const [users, setUsers] = useState<IUsers[] | []>([]);
   const api = useAxios();
   const navigate = useNavigate();
 
   const getAllUsers = async () => {
     try {
-      const data: IUsers[] | null = await api.get("");
+      const data: IUsers[] | [] = await api.get("");
       setUsers(data);
     } catch (error) {
       console.error(error);
     }
   };
+
+  console.log(users);
 
   const logout = async () => {
     try {
@@ -36,30 +38,35 @@ const Home = () => {
     }
   };
   return (
-    <section className="flex justify-between items-center p-5 text-white bg-black">
-      <h1>Auth-fullStack</h1>
-      <div className="flex items-center space-x-3">
-        <p>{user?.username}</p>
-        <p onClick={logout} className="p-2 border rounded-lg text-white">
-          Logout
-        </p>
-      </div>
-
-      <p className="py-2 px-5 bg-black text-white" onClick={getAllUsers}>
-        Get all users
-      </p>
-
-      <section>
-        {users?.map((user) => {
-          return (
-            <div>
-              <p>{user.username}</p>
-              <p>{user.email}</p>
-            </div>
-          );
-        })}
+    <>
+      <section className="flex justify-between items-center p-5 text-white bg-black">
+        <h1>Auth-fullStack</h1>
+        <div className="flex items-center space-x-3">
+          <p>{user?.username}</p>
+          <button onClick={logout} className="p-2 border rounded-lg text-white">
+            Logout
+          </button>
+        </div>
       </section>
-    </section>
+      <section>
+        <button
+          className="py-2 px-5 mt-10 bg-black text-white rounded-lg"
+          onClick={getAllUsers}
+        >
+          Get all users
+        </button>
+        {/* <div>
+          {users?.map((user) => {
+            return (
+              <div>
+                <p>{user.username}</p>
+                <p>{user.email}</p>
+              </div>
+            );
+          })}
+        </div> */}
+      </section>
+    </>
   );
 };
 
