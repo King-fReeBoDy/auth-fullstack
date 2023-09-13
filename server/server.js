@@ -52,9 +52,6 @@ app.get(
   async (req, res) => {
     try {
       const users = await prisma.user.findMany({});
-
-      console.log("users");
-
       res.status(200).send(users);
     } catch (error) {
       console.error(error);

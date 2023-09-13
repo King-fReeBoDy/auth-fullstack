@@ -39,8 +39,6 @@ const useAxios = () => {
         withCredentials: true,
       });
 
-      console.log("newAcessToken");
-
       req.headers.Authorization = `Bearer ${data.accessToken}`;
 
       setUser(data);

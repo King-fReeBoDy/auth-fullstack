@@ -18,14 +18,13 @@ const Home = () => {
 
   const getAllUsers = async () => {
     try {
-      const data: IUsers[] | [] = await api.get("");
-      setUsers(data);
+      const res = await api.get("");
+      const users: IUsers[] | [] = res.data;
+      setUsers(users);
     } catch (error) {
       console.error(error);
     }
   };
-
-  console.log(users);
 
   const logout = async () => {
     try {
@@ -50,21 +49,21 @@ const Home = () => {
       </section>
       <section>
         <button
-          className="py-2 px-5 mt-10 bg-black text-white rounded-lg"
+          className="py-2 px-5 mt-10 bg-black text-white rounded-lg m-10"
           onClick={getAllUsers}
         >
           Get all users
         </button>
-        {/* <div>
-          {users?.map((user) => {
+        <div className="grid grid-cols-2 mt-10 w-[90%] lg:w-[900px] mx-auto">
+          {users.map((user, idx) => {
             return (
-              <div>
-                <p>{user.username}</p>
+              <div key={idx} className="mb-5">
+                <p className="font-bold">{user.username}</p>
                 <p>{user.email}</p>
               </div>
             );
           })}
-        </div> */}
+        </div>
       </section>
     </>
   );
